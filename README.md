@@ -150,3 +150,211 @@ GM06990-HindIII-allReps-filtered.mcool	101M
 GM06990-HindIII-R1-filtered.mcool		56M
 GM06990-HindIII-R2-filtered.mcool		65M
 ```
+
+## Identifying 3D chromatin structure
+### A/B Compartments & TADs with cooltools
+<img width="2091" height="845" alt="image" src="https://github.com/user-attachments/assets/cfdde319-d2a9-4442-9ab7-bf75dead04c3" />
+
+### A/B Compartments Analysis
+```bash
+mkdir ../result/ABcompartment
+mkdir ../result/ABcompartment/CSHA_20260723
+
+cooltools genome binnify \
+../ref/hg38.autosomes.chrom.sizes 50000 \
+> ../result/ABcompartment/CSHA_20260723/ModifiedChromSize.txt
+
+cooltools genome genecov \
+../result/ABcompartment/CSHA_20260723/ModifiedChromSize.txt \
+hg38 \
+> ../result/ABcompartment/CSHA_20260723/ModifiedGeneDensity.bedGraph
+
+cooltools eigs-cis \
+--view ../ref/hg38.autosomes.view.bed \
+--phasing-track ../result/ABcompartment/CSHA_20260723/ModifiedGeneDensity.bedGraph \
+--out-prefix ../result/ABcompartment/CSHA_20260723/ABcompartment \
+--bigwig \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered.mcool::resolutions/50000
+```
+### A/B Compartments Results
+```bash
+ABcompartment.cis.bw	    849K
+ABcompartment.cis.lam.txt	2.0K
+ABcompartment.cis.vecs.tsv	5.3M
+```
+### TADs Analysis
+```bash
+mkdir ../result/TADs
+mkdir ../result/TADs/CSHA_20260723
+
+cooltools insulation \
+--view ../ref/hg38.autosomes.view.bed \
+-p 20 \
+-o ../result/TADs/CSHA_20260723/25000_InsulationScore.tsv \
+--bigwig \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered.mcool::resolutions/25000 \
+25000
+```
+### TADs Results
+```bash
+25000_InsulationScore.tsv             7.2M
+25000_InsulationScore.tsv.25000.bw    566K
+```
+
+### Loops with HICCUPS/raichu
+<img width="915" height="357" alt="image" src="https://github.com/user-attachments/assets/05782d78-0b03-4399-817f-5d8f276946dc" />
+
+### Loops Analysis with HICCUPS
+```bash
+mkdir ../result/Loops
+mkdir ../result/Loops/CSHA_20260723
+
+cooler dump --table chroms \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered.mcool::resolutions/10000 \
+> ../result/Loops/all.chrom.sizes
+
+awk 'BEGIN{OFS="\t"} $1 ~ /^chr([1-9]|1[0-9]|2[0-2]|X)$/ {print $1, $2}' \
+../result/Loops/all.chrom.sizes \
+| sort -k1,1V \
+> ../result/Loops/autosome.chrom.sizes
+
+cooler dump \
+--table pixels \
+--join \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered.mcool::resolutions/10000 \
+| awk 'BEGIN{OFS="\t"}
+NR==FNR { keep[$1]=1; next }
+($1 in keep) && ($4 in keep) { print }' \
+../result/Loops/autosome.chrom.sizes - \
+| cooler load -f bg2 --assembly hg38 \
+../result/Loops/autosome.chrom.sizes:10000 \
+- ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool
+
+cooler dump \
+--table pixels \
+--join \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R1-filtered.mcool::resolutions/10000 \
+| awk 'BEGIN{OFS="\t"}
+NR==FNR { keep[$1]=1; next }
+($1 in keep) && ($4 in keep) { print }' \
+../result/Loops/autosome.chrom.sizes - \
+| cooler load -f bg2 --assembly hg38 \
+../result/Loops/autosome.chrom.sizes:10000 \
+- ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R1-filtered_10000.autosome.cool
+
+cooler dump \
+--table pixels \
+--join \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R2-filtered.mcool::resolutions/10000 \
+| awk 'BEGIN{OFS="\t"}
+NR==FNR { keep[$1]=1; next }
+($1 in keep) && ($4 in keep) { print }' \
+../result/Loops/autosome.chrom.sizes - \
+| cooler load -f bg2 --assembly hg38 \
+../result/Loops/autosome.chrom.sizes:10000 \
+- ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R2-filtered_10000.autosome.cool
+
+cooler balance \
+-p 20 --force \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool
+
+cooler balance \
+-p 20 --force \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R1-filtered_10000.autosome.cool
+
+cooler balance \
+-p 20 --force \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R2-filtered_10000.autosome.cool
+
+pyHICCUPS \
+-O ../result/Loops/CSHA_20260723/Result_ICE_Loops.bedpe \
+-p ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool \
+--clr-weight-name weight \
+--pw 2 3 4 \
+--ww 5 6 7 \
+--maxww 10 \
+--min-local-reads 25 \
+--only-anchors \
+--min-marginal-peaks 3 \
+--maxapart 3000000 \
+--nproc 20 \
+--logFile hiccups_ICE.log
+```
+### Loops Analysis with raichu
+```bash
+raichu \
+--cool-uri ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool \
+-n raichu_weight \
+--force \
+--logFile raichu.log
+
+pyHICCUPS \
+-O ../result/Loops/CSHA_20260723/Result_Raichu_Loops.bedpe \
+-p ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool \
+--clr-weight-name raichu_weight \
+--pw 2 3 4 \
+--ww 5 6 7 \
+--maxww 10 \
+--min-local-reads 25 \
+--only-anchors \
+--min-marginal-peaks 3 \
+--maxapart 3000000 \
+--nproc 20 \
+--logFile hiccups_raichu.log
+```
+### Compare loops
+```bash
+peak-plot \
+-O ../result/Loops/CSHA_20260723/ICE_chr21_32000000_34000000.png \
+-p ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool \
+-I ../result/Loops/CSHA_20260723/Result_ICE_Loops.bedpe \
+-C chr21 \
+-S 32000000 \
+-E 34000000 \
+--clr-weight-name weight
+
+peak-plot \
+-O ../result/Loops/CSHA_20260723/Raichu_chr21_32000000_34000000.png \
+-p ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-allReps-filtered_10000.autosome.cool \
+-I ../result/Loops/CSHA_20260723/Result_Raichu_Loops.bedpe \
+-C chr21 \
+-S 32000000 \
+-E 34000000 \
+--clr-weight-name raichu_weight
+```
+### Result
+<img width="960" height="388" alt="image" src="https://github.com/user-attachments/assets/0c078b41-8f89-4bca-9509-0c440b033f8e" />
+
+### Enhancing Hi-C data with HiCFoundation
+<img width="1019" height="394" alt="image" src="https://github.com/user-attachments/assets/487ce388-a21a-4f5f-97e1-d007b6fdf006" />
+
+### Analysis
+```bash
+mkdir ../result/TADs
+mkdir ../result/TADs/CSHA_20260723
+
+bash hitad_DS_code.sh \
+25000 \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R1-filtered_25000.autosome.cool \
+../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R2-filtered_25000.autosome.cool
+
+hitad \
+-d hitad_dataset.tsv \
+-p 20 \
+-O ../result/TADs/CSHA_20260723/hitad_25000.bed \
+--removeCache \
+--logFile hitad.log
+
+tad-plot \
+-O ../result/TADs/CSHA_20260723/TADvis.png \
+--dpi 500 \
+-p ../result/runHiC/CSHA_20260723/coolers-hg38/GM06990-HindIII-R2-filtered_25000.autosome.cool \
+-T ../result/TADs/CSHA_20260723/hitad_25000.bed \
+-C 21 \
+-S 30000000 \
+-E 36000000
+```
+### Result
+<img width="960" height="251" alt="image" src="https://github.com/user-attachments/assets/f7f246b3-0ee3-473e-a82f-b2682920ab0d" />
+
+
