@@ -242,7 +242,71 @@ from hicrep import hicrepSCC
 from hicrep.utils import readMcool
 import numpy as np
 import matplotlib.pyplot as plt
+
+h = 4
+dBPMax = 500000 
+bDownSample = False
+resolution = 50_000
+
+f_hic1 = f"/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool"
+f_hic2 = f"/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool"
+
+cool1, binSize1 = readMcool(f_hic1, resolution)
+cool2, binSize2 = readMcool(f_hic2, resolution)
+
+scc = hicrepSCC(cool1, cool2, h, dBPMax, bDownSample, excludeChr="chrM")
+sccSub = hicrepSCC(cool1, cool2, h, dBPMax, bDownSample, np.array(['chr16'], dtype=str))
+
+f_hic_many = [
+    "/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool",
+    "/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool",
+    "/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/K562_insituhic_rep1_4DNFI9G9FRJJ.ice.mcool",
+    "/data3/psg/NGS_2026/CSHA_HiC/input_data/hicrep/K562_insituhic_rep2_4DNFIRHH2E7D.ice.mcool",
+]
+
+names = [
+'GM12878 rep1',
+'GM12878 rep2',
+'K562 rep1',
+'K562 rep2',
+]
+
+cools = [readMcool(f, resolution)[0] for f in f_hic_many]
+
+from itertools import combinations
+
+n = len(f_hic_many)
+mat = np.eye(n)
+
+for i, j in combinations(range(n), 2):
+
+    scc = hicrepSCC(cools[i], cools[j], h, dBPMax, bDownSample,
+                    np.array(['chr16'], dtype=str))
+    
+    mat[i, j] = mat[j, i] = scc[0]
 ```
+### Result
+```python
+fig, ax = plt.subplots()
+im = ax.imshow(mat, cmap='viridis')
+
+ax.set_xticks(range(len(names)))
+ax.set_yticks(range(len(names)))
+ax.set_xticklabels(names, rotation=45, ha='right')
+ax.set_yticklabels(names)
+
+thresh = (mat.max() + mat.min()) / 2
+for i in range(mat.shape[0]):
+    for j in range(mat.shape[1]):
+        ax.text(j, i, '{:.3g}'.format(mat[i, j]), ha='center', va='center',
+                color='white' if mat[i, j] < thresh else 'black')
+
+fig.colorbar(im, ax=ax, label='HiCRep (chr16)')
+plt.tight_layout()
+plt.show()
+```
+<img width="588" height="470" alt="image" src="https://github.com/user-attachments/assets/a65a572c-4fd4-431d-95d5-3ee70534b955" />
+
 
 ### A/B Compartments & TADs with cooltools
 <img width="2091" height="845" alt="image" src="https://github.com/user-attachments/assets/cfdde319-d2a9-4442-9ab7-bf75dead04c3" />
