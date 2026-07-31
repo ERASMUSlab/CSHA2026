@@ -152,6 +152,89 @@ GM06990-HindIII-R2-filtered.mcool		65M
 ```
 
 ## Identifying 3D chromatin structure
+### assessing the reproducibility of Hi-C data with HiC-Rep
+<img width="875" height="457" alt="image" src="https://github.com/user-attachments/assets/538821ae-fd93-4b65-86f7-496b326883c8" />
+### Data Preparation
+```bash
+mkdir input_data
+mkdir input_data/hicrep
+mkdir result/hicrep
+
+cd input_data/hicrep
+
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/ver1/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/ver1/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/ver1/K562_insituhic_rep1_4DNFI9G9FRJJ.ice.mcool
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/ver1/K562_insituhic_rep2_4DNFIRHH2E7D.ice.mcool
+```
+### CLI Analysis
+```bash
+cd ../../command/
+
+hicrep \
+../input_data/hicrep/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool \
+../input_data/hicrep/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool \
+../result/hicrep/GM12878_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+
+hicrep \
+../input_data/hicrep/K562_insituhic_rep1_4DNFI9G9FRJJ.ice.mcool \
+../input_data/hicrep/K562_insituhic_rep2_4DNFIRHH2E7D.ice.mcool \
+../result/hicrep/K562_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+
+hicrep \
+../input_data/hicrep/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool \
+../input_data/hicrep/K562_insituhic_rep1_4DNFI9G9FRJJ.ice.mcool \
+../result/hicrep/GM12878rep1_K562rep1_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+
+hicrep \
+../input_data/hicrep/GM12878_insituhic_rep1_4DNFIUOVQH68.ice.mcool \
+../input_data/hicrep/K562_insituhic_rep2_4DNFIRHH2E7D.ice.mcool \
+../result/hicrep/GM12878rep1_K562rep2_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+
+hicrep \
+../input_data/hicrep/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool \
+../input_data/hicrep/K562_insituhic_rep1_4DNFI9G9FRJJ.ice.mcool \
+../result/hicrep/GM12878rep2_K562rep1_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+
+hicrep \
+../input_data/hicrep/GM12878_insituhic_rep2_4DNFIIT7LQ6M.ice.mcool \
+../input_data/hicrep/K562_insituhic_rep2_4DNFIRHH2E7D.ice.mcool \
+../result/hicrep/GM12878rep2_K562rep2_hicrep.txt \
+--binSize 50000 \
+--h 4 \
+--dBPMax 500000 \
+--excludeChr chrM
+```
+### Result
+```bash
+GM12878_hicrep.txt
+GM12878rep1_K562rep1_hicrep.txt
+GM12878rep1_K562rep2_hicrep.txt
+GM12878rep2_K562rep1_hicrep.txt
+GM12878rep2_K562rep2_hicrep.txt
+K562_hicrep.txt
+```
+
 ### A/B Compartments & TADs with cooltools
 <img width="2091" height="845" alt="image" src="https://github.com/user-attachments/assets/cfdde319-d2a9-4442-9ab7-bf75dead04c3" />
 
