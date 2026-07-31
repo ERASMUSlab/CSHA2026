@@ -154,6 +154,7 @@ GM06990-HindIII-R2-filtered.mcool		65M
 ## Identifying 3D chromatin structure
 ### assessing the reproducibility of Hi-C data with HiC-Rep
 <img width="875" height="457" alt="image" src="https://github.com/user-attachments/assets/538821ae-fd93-4b65-86f7-496b326883c8" />
+
 ### Data Preparation
 ```bash
 mkdir input_data
@@ -227,12 +228,12 @@ hicrep \
 ```
 ### Result
 ```bash
-GM12878_hicrep.txt
-GM12878rep1_K562rep1_hicrep.txt
-GM12878rep1_K562rep2_hicrep.txt
-GM12878rep2_K562rep1_hicrep.txt
-GM12878rep2_K562rep2_hicrep.txt
-K562_hicrep.txt
+GM12878_hicrep.txt                 1023
+GM12878rep1_K562rep1_hicrep.txt    1.1K
+GM12878rep1_K562rep2_hicrep.txt    1.1K
+GM12878rep2_K562rep1_hicrep.txt    1.1K
+GM12878rep2_K562rep2_hicrep.txt    1.1K
+K562_hicrep.txt                    1014
 ```
 
 ### A/B Compartments & TADs with cooltools
