@@ -481,6 +481,63 @@ peak-plot \
 ### Result
 <img width="960" height="388" alt="image" src="https://github.com/user-attachments/assets/0c078b41-8f89-4bca-9509-0c440b033f8e" />
 
+### stripe with stripenn
+<img width="1160" height="453" alt="image" src="https://github.com/user-attachments/assets/ea17b0fe-efbc-408c-8870-6167bf10c23c" />
+
+### Data Preparation
+```bash
+cd ../input_data
+mkdir stripenn
+cd stripenn
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/stripenn_input/GM12878_insituhic_4DNFIXP4QG5B_5000.cool.part_aa
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/stripenn_input/GM12878_insituhic_4DNFIXP4QG5B_5000.cool.part_ab
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/stripenn_input/GM12878_insituhic_4DNFIXP4QG5B_5000.cool.part_ac
+wget https://github.com/ERASMUSlab/CSHA2026/releases/download/stripenn_input/GM12878_insituhic_4DNFIXP4QG5B_5000.cool.sha256
+
+cat GM12878_insituhic_4DNFIXP4QG5B_5000.cool.part_* > GM12878_insituhic_4DNFIXP4QG5B_5000.cool
+shasum -a 256 -c GM12878_insituhic_4DNFIXP4QG5B_5000.cool.sha256
+cooler info GM12878_insituhic_4DNFIXP4QG5B_5000.cool
+
+pip install stripenn
+```
+
+### Analysis
+```bash
+cd ../../command/
+mkdir ../result/stripe
+
+stripenn compute \
+--cool ../input_data/stripenn/GM12878_insituhic_4DNFIXP4QG5B_5000.cool \
+--out ../result/stripe/GM12878 \
+-k chr16
+
+peak-plot \
+-O ../result/stripe/GM12878/ICE_GM12878_chr16_13900000_14700000.png \
+-p ../input_data/stripenn/GM12878_insituhic_4DNFIXP4QG5B_5000.cool \
+-C chr16 \
+-S 13900000 \
+-E 14700000 \
+--clr-weight-name weight
+
+peak-plot \
+-O ../result/stripe/GM12878/ICE_GM12878_chr16_46700000_48300000.png \
+-p ../input_data/stripenn/GM12878_insituhic_4DNFIXP4QG5B_5000.cool \
+-C chr16 \
+-S 46700000 \
+-E 48300000 \
+--clr-weight-name weight
+```
+
+### Result
+```bash
+ICE_GM12878_chr16_13900000_14700000.png    99K
+ICE_GM12878_chr16_46700000_48300000.png    246K
+result_filtered.tsv                        8.6K
+result_unfiltered.tsv                      241K
+stripenn.log                               235
+```
+<img width="960" height="376" alt="image" src="https://github.com/user-attachments/assets/3169123a-ec44-4531-84a9-ef19917f9439" />
+
 ### Enhancing Hi-C data with HiCFoundation
 <img width="1019" height="394" alt="image" src="https://github.com/user-attachments/assets/487ce388-a21a-4f5f-97e1-d007b6fdf006" />
 
