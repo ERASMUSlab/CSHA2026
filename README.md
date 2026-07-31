@@ -236,6 +236,14 @@ GM12878rep2_K562rep2_hicrep.txt    1.1K
 K562_hicrep.txt                    1014
 ```
 
+### API Analysis
+```python
+from hicrep import hicrepSCC
+from hicrep.utils import readMcool
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
 ### A/B Compartments & TADs with cooltools
 <img width="2091" height="845" alt="image" src="https://github.com/user-attachments/assets/cfdde319-d2a9-4442-9ab7-bf75dead04c3" />
 
